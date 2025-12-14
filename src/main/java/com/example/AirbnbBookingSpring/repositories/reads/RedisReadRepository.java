@@ -1,5 +1,9 @@
 package com.example.AirbnbBookingSpring.repositories.reads;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -38,6 +42,29 @@ public class RedisReadRepository {
             throw new RuntimeException("Failed to parse Airbnb read model from Redis", e);
         }
        
+    }
+
+    public List<AirbnbReadModel> findAllAirbnbs() {
+        Set<String> keys = redisTemplate.keys(AIRBNB_KEY_PREFIX + "*");
+
+        if (keys.isEmpty() || keys == null) {
+            return List.of(); // empty list
+        }
+
+        return keys.stream()
+        .map(key -> {
+            String value = redisTemplate.opsForValue().get(key);
+            if (value == null) {
+                return null;
+            }
+            try {
+                return objectMapper.readValue(value, AirbnbReadModel.class);
+            } catch (JacksonException e) {
+                throw new RuntimeException("Failed to parse Airbnb read model from Redis", e);
+            }
+        })
+        .filter(airbnb -> airbnb != null)
+        .collect(Collectors.toList());
     }
 
     public BookingReadModel findBookingById(Long id) {
