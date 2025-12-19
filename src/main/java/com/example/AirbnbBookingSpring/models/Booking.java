@@ -18,12 +18,12 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private String userId;
+    private User user;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="airbnb_id",nullable = false)
-    private String airbnbId;
+    private Airbnb airbnb;
 
     @Column(nullable = false)
     private String totalPrice;
