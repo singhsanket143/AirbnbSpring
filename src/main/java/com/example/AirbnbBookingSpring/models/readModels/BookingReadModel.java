@@ -1,5 +1,7 @@
 package com.example.AirbnbBookingSpring.models.readModels;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,14 +20,14 @@ public class BookingReadModel {
 
     private Long userId;
 
-    private Long totalPrice;
+    private double totalPrice;
 
     private String bookingStatus;
 
     private String idempotencyKey;
 
-    private String checkInDate;
+    private LocalDate checkInDate;
 
-    private String checkOutDate;
+    private LocalDate checkOutDate;
     
 }

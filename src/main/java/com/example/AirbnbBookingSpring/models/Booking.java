@@ -1,4 +1,6 @@
 package com.example.AirbnbBookingSpring.models;
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,13 +25,13 @@ public class Booking {
     private Long id;
 
     @Column(nullable = false)
-    private String userId;
+    private Long userId;
 
     @Column(nullable = false)
-    private String airbnbId;
+    private Long airbnbId;
 
     @Column(nullable = false)
-    private String totalPrice;
+    private double totalPrice;
 
 
     @Enumerated(EnumType.STRING)
@@ -39,6 +41,11 @@ public class Booking {
 
     @Column(unique = true)
     private String idempotencyKey;
+
+    private LocalDate checkInDate;
+
+    private LocalDate checkOutDate;
+
 
 
     public enum BookingStatus {
