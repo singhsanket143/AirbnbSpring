@@ -1,11 +1,6 @@
 package com.example.AirbnbBookingSpring.models;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.*;
+import jakarta.persistence.*;
 
 @Entity
 @Builder
@@ -15,11 +10,21 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class Availability extends  BaseModel {
 
-    @Column(nullable = false)
-    private String airbnbId;
+    /**
+     * Many Availability records have one airbnb ID
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="airbnb_id", nullable = false)
+    private Airbnb airbnb;
 
     @Column(nullable = false)
     private String date;
-    
-    private Long bookingId; // null if available
+
+
+    /**
+     * Many Availability records have one booking ID
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name= "booking_id")
+    private Booking booking;
 }
