@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,8 +14,6 @@ import com.example.AirbnbBookingSpring.models.readModels.AvailabilityReadModel;
 import com.example.AirbnbBookingSpring.models.readModels.BookingReadModel;
 
 import lombok.RequiredArgsConstructor;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 
 @Repository
 @RequiredArgsConstructor
