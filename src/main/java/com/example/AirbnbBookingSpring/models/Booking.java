@@ -1,13 +1,7 @@
 package com.example.AirbnbBookingSpring.models;
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,14 +19,7 @@ public class Booking {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
-
-    @Column(nullable = false)
-    private Long airbnbId;
-
-    @Column(nullable = false)
     private double totalPrice;
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -46,6 +33,16 @@ public class Booking {
 
     private LocalDate checkOutDate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="user_id",nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="airbnb_id",nullable = false)
+    private Airbnb airbnb;
+
+    @OneToOne(mappedBy = "booking")
+    private Availability availability;
 
 
     public enum BookingStatus {

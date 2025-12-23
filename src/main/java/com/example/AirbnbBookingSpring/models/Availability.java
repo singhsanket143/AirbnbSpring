@@ -1,14 +1,12 @@
 package com.example.AirbnbBookingSpring.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Entity
 @Builder
@@ -22,10 +20,16 @@ public class Availability {
     private Long id;
 
     @Column(nullable = false)
-    private String airbnbId;
+    private LocalDate Date;
 
-    @Column(nullable = false)
-    private String date;
-    
-    private Long bookingId; // null if available
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="airbnb_id",nullable = false)
+    private Airbnb airbnb;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking; // null if available
+
+
+
 }

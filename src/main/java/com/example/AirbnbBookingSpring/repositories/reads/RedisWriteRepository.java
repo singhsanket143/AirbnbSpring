@@ -20,8 +20,8 @@ public class RedisWriteRepository {
     public void writeBookingReadModel(Booking booking) {
         BookingReadModel bookingReadModel = BookingReadModel.builder()
             .id(booking.getId())
-            .airbnbId(booking.getAirbnbId())
-            .userId(booking.getUserId())
+            .airbnbId(booking.getAirbnb().getId())
+            .userId(booking.getUser().getId())
             .totalPrice(booking.getTotalPrice())
             .bookingStatus(booking.getBookingStatus().name())
             .idempotencyKey(booking.getIdempotencyKey())
