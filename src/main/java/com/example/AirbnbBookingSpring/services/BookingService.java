@@ -5,6 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.AirbnbBookingSpring.models.User;
+import com.example.AirbnbBookingSpring.repositories.writes.UserWriteRepository;
 import org.springframework.stereotype.Service;
 
 import com.example.AirbnbBookingSpring.dtos.CreateBookingRequest;
@@ -32,12 +34,16 @@ public class BookingService implements IBookingService {
     private final AirbnbWriteRepository airbnbWriteRepository;
     private final ConcurrencyControlStrategy concurrencyControlStrategy;
     private final RedisWriteRepository redisWriteRepository;
+    private final UserWriteRepository userWriteRepository;
     
     @Override
     @Transactional
     public Booking createBooking(CreateBookingRequest createBookingRequest) {
         
         Airbnb airbnb = airbnbWriteRepository.findById(null).orElseThrow(() -> new RuntimeException("Airbnb not found"));
+
+        User user=userWriteRepository.findById(createBookingRequest.getUserId())
+                .orElse(null);
 
         if(createBookingRequest.getCheckInDate().isAfter(createBookingRequest.getCheckOutDate())) {
             throw new RuntimeException("Check-in date must be before check-out date");
@@ -65,8 +71,8 @@ public class BookingService implements IBookingService {
         airbnb.getId(), createBookingRequest.getCheckInDate(), createBookingRequest.getCheckOutDate(), totalPrice, idempotencyKey);
 
         Booking booking = Booking.builder()
-            .airbnbId(airbnb.getId())
-            .userId(createBookingRequest.getUserId())
+                .airbnb(airbnb)
+            .user(user)
             .totalPrice(totalPrice)
             .idempotencyKey(idempotencyKey)
             .bookingStatus(Booking.BookingStatus.PENDING)
