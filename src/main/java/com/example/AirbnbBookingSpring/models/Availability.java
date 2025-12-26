@@ -1,5 +1,7 @@
 package com.example.AirbnbBookingSpring.models;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +27,7 @@ public class Availability {
     private String airbnbId;
 
     @Column(nullable = false)
-    private String date;
+    private LocalDate date;
     
     private Long bookingId; // null if available
 }

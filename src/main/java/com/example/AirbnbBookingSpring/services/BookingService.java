@@ -3,6 +3,7 @@ package com.example.AirbnbBookingSpring.services;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -12,10 +13,12 @@ import com.example.AirbnbBookingSpring.dtos.UpdateBookingRequest;
 import com.example.AirbnbBookingSpring.models.Airbnb;
 import com.example.AirbnbBookingSpring.models.Availability;
 import com.example.AirbnbBookingSpring.models.Booking;
+import com.example.AirbnbBookingSpring.models.Booking.BookingStatus;
 import com.example.AirbnbBookingSpring.repositories.reads.RedisWriteRepository;
 import com.example.AirbnbBookingSpring.repositories.writes.AirbnbWriteRepository;
 import com.example.AirbnbBookingSpring.repositories.writes.AvailabilityWriteRepository;
 import com.example.AirbnbBookingSpring.repositories.writes.BookingWriteRepository;
+import com.example.AirbnbBookingSpring.saga.SagaEventPublisher;
 import com.example.AirbnbBookingSpring.services.concurrency.ConcurrencyControlStrategy;
 
 import jakarta.transaction.Transactional;
@@ -32,12 +35,15 @@ public class BookingService implements IBookingService {
     private final AirbnbWriteRepository airbnbWriteRepository;
     private final ConcurrencyControlStrategy concurrencyControlStrategy;
     private final RedisWriteRepository redisWriteRepository;
-    
+    private final IdempotencyService idempotencyService;
+    private final SagaEventPublisher sagaEventPublisher;
+
+
     @Override
     @Transactional
     public Booking createBooking(CreateBookingRequest createBookingRequest) {
         
-        Airbnb airbnb = airbnbWriteRepository.findById(null).orElseThrow(() -> new RuntimeException("Airbnb not found"));
+        Airbnb airbnb = airbnbWriteRepository.findById(createBookingRequest.getAirbnbId()).orElseThrow(() -> new RuntimeException("Airbnb not found"));
 
         if(createBookingRequest.getCheckInDate().isAfter(createBookingRequest.getCheckOutDate())) {
             throw new RuntimeException("Check-in date must be before check-out date");
@@ -84,10 +90,24 @@ public class BookingService implements IBookingService {
     }
 
     @Override
+    @Transactional
     public Booking updateBooking(UpdateBookingRequest updateBookingRequest) {
-        // TODO: implement this
-        throw new UnsupportedOperationException("Unimplemented method 'updateBooking'");
+        log.info("Updating booking for idempotency key {}", updateBookingRequest.getIdempotencyKey());
+        Booking booking = idempotencyService.findBookingByIdempotencyKey(updateBookingRequest.getIdempotencyKey())
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+        log.info("Booking found for idempotency key {}", updateBookingRequest.getIdempotencyKey());
+        log.info("Booking status: {}", booking.getBookingStatus());
+        if(booking.getBookingStatus() != Booking.BookingStatus.PENDING) {
+            throw new RuntimeException("Booking is not pending");
+        }
 
-        
+        if(updateBookingRequest.getBookingStatus() == BookingStatus.CONFIRMED) { // TODO: This also violates a SOLID principle, please resolve: https://github.com/singhsanket143/AirbnbSpring/issues/13
+            sagaEventPublisher.publishEvent("BOOKING_CONFIRM_REQUESTED", "CONFIRM_BOOKING", Map.of("bookingId", booking.getId(), "airbnbId", booking.getAirbnbId(), "checkInDate", booking.getCheckInDate(), "checkOutDate", booking.getCheckOutDate()));
+        } else if(updateBookingRequest.getBookingStatus() == BookingStatus.CANCELLED) {
+            sagaEventPublisher.publishEvent("BOOKING_CANCEL_REQUESTED", "CANCEL_BOOKING", Map.of("bookingId", booking.getId(), "airbnbId", booking.getAirbnbId(), "checkInDate", booking.getCheckInDate(), "checkOutDate", booking.getCheckOutDate()));
+        }
+
+        return booking;
+
     }
 }
