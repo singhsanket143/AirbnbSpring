@@ -25,6 +25,7 @@ public class SagaEventConsumer {
     public void consumeEvents() {
         try {
             String eventJson = redisTemplate.opsForList().leftPop(SAGA_QUEUE, 1, TimeUnit.SECONDS);
+            log.info("Event JSON: {}", eventJson);
             if(eventJson != null && !eventJson.isEmpty()) {
                 SagaEvent sagaEvent = objectMapper.readValue(eventJson, SagaEvent.class);
                 log.info("Processing saga event: {}", sagaEvent.getSagaId());

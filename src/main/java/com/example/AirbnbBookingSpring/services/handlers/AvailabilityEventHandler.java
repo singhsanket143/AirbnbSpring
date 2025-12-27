@@ -39,7 +39,6 @@ public class AvailabilityEventHandler {
             log.info("Updating availability for Airbnb {}: {}", airbnbId, checkInDate, checkOutDate);
             availabilityWriteRepository.updateBookingIdByAirbnbIdAndDateBetween(bookingId, airbnbId, checkInDate, checkOutDate);
             log.info("Availability updated for Airbnb {}: {}", airbnbId, checkInDate, checkOutDate);
-            sagaEventPublisher.publishEvent("BOOKING_CONFIRMED", "CONFIRM_BOOKING", payload);
         } catch (Exception e) {
             Map<String, Object> payload = sagaEvent.getPayload();
             sagaEventPublisher.publishEvent("BOOKING_COMPENSATED", "COMPENSATE_BOOKING", payload);
@@ -47,6 +46,7 @@ public class AvailabilityEventHandler {
         }
     }
 
+    @Transactional
     public void handleBookingCancelled(SagaEvent sagaEvent) {
         try {
             Map<String, Object> payload = sagaEvent.getPayload();
@@ -57,7 +57,6 @@ public class AvailabilityEventHandler {
 
             availabilityWriteRepository.updateBookingIdByAirbnbIdAndDateBetween(null, airbnbId, checkInDate, checkOutDate);
 
-            sagaEventPublisher.publishEvent("BOOKING_CANCELLED", "CANCEL_BOOKING", payload);
         } catch (Exception e) {
             Map<String, Object> payload = sagaEvent.getPayload();
             sagaEventPublisher.publishEvent("BOOKING_COMPENSATED", "COMPENSATE_BOOKING", payload);
